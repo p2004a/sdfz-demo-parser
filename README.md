@@ -49,11 +49,11 @@ sdfz-demo-parser game.sdfz --header-only
 # Only chat and Lua packets, written to a file
 sdfz-demo-parser game.sdfz --include-packets CHAT,LUAMSG -o out.json
 
-# Every packet type (clears the default excludes), as compact JSON
-sdfz-demo-parser game.sdfz --all-packets --compact
+# Every packet type (clear the default excludes), as compact JSON
+sdfz-demo-parser game.sdfz --exclude-packets "" --compact
 ```
 
-The options map onto [`DemoParserConfig`](src/demo-parser.ts): `--header-only`, `--include-packets`/`--exclude-packets` (packet names or numeric ids), `--all-packets`, `--include-player-ids`, `--exclude-lua-handlers`, `--no-standard-lua-handlers` and `--verbose`. A list flag *replaces* its library default when given; pass an empty value (e.g. `--exclude-packets ""`) to clear a default filter such as the packet excludes. Run `sdfz-demo-parser --help` for the full list.
+The options map onto [`DemoParserConfig`](src/demo-parser.ts): `--header-only`, `--include-packets`/`--exclude-packets` (packet names or numeric ids), `--include-player-ids`, `--exclude-lua-handlers`, `--no-standard-lua-handlers` and `--verbose`. A list flag *replaces* its library default when given; pass an empty value (e.g. `--exclude-packets ""`) to clear a default filter such as the packet excludes. Run `sdfz-demo-parser --help` for the full list.
 
 ## Development
 

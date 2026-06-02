@@ -18,7 +18,6 @@ Options:
   --header-only                  Parse only the header/summary (skips the packet stream)
   --include-packets <list>       Only include these packet types (names or numeric ids)
   --exclude-packets <list>       Exclude these packet types (replaces the default excludes)
-  --all-packets                  Include every packet type (clears the default excludes)
   --include-player-ids <list>    Only include packets/commands from these player ids
   --exclude-lua-handlers <list>  Lua handler names to exclude from the packet stream
   --no-standard-lua-handlers     Disable the built-in standard Lua data handlers
@@ -34,7 +33,8 @@ A list flag overrides its library default whenever given; pass an empty value
 (e.g. --exclude-packets "") to clear that filter entirely.
 
 By default the packet stream is included, respecting the include/exclude filters.
-Default-excluded packets are NEWFRAME, KEYFRAME, SYNCRESPONSE and PLAYERINFO.
+Packets excluded by default: NEWFRAME, KEYFRAME, SYNCRESPONSE, PLAYERINFO
+(pass --exclude-packets "" to include them as well).
 Requires Node.js 18.3+ (Node 24+ recommended).
 `;
 
@@ -46,7 +46,6 @@ function parseArgsOrExit() {
                 "header-only": { type: "boolean" },
                 "include-packets": { type: "string", multiple: true },
                 "exclude-packets": { type: "string", multiple: true },
-                "all-packets": { type: "boolean" },
                 "include-player-ids": { type: "string", multiple: true },
                 "exclude-lua-handlers": { type: "string", multiple: true },
                 "no-standard-lua-handlers": { type: "boolean" },
@@ -130,13 +129,7 @@ function buildConfig(values: CliValues): DemoParserConfig {
     }
 
     // A list flag overrides its library default whenever it is present, even when
-    // empty -- so `--exclude-packets ""` clears the default excludes entirely.
-    // `--all-packets` is a shorthand that clears both packet filters; explicit
-    // --include/--exclude-packets below still take precedence over it.
-    if (values["all-packets"]) {
-        config.includePackets = [];
-        config.excludePackets = [];
-    }
+    // empty -- so e.g. `--exclude-packets ""` clears the default packet excludes.
     if (values["include-packets"] !== undefined) {
         config.includePackets = splitList(values["include-packets"]).map(resolvePacketId);
     }
