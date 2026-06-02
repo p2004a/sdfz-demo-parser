@@ -30,6 +30,8 @@ Options:
 
 Lists are comma-separated and/or the flag may be repeated, e.g.
   --include-packets CHAT,LUAMSG --include-packets STARTPOS
+A list flag overrides its library default whenever given; pass an empty value
+(e.g. --exclude-packets "") to clear that filter entirely.
 
 By default the packet stream is included, respecting the include/exclude filters.
 Default-excluded packets are NEWFRAME, KEYFRAME, SYNCRESPONSE and PLAYERINFO.
@@ -127,26 +129,25 @@ function buildConfig(values: CliValues): DemoParserConfig {
         config.includeStandardLuaHandlers = false;
     }
 
-    // --all-packets clears the default excludes; explicit --include/--exclude-packets below still override it.
+    // A list flag overrides its library default whenever it is present, even when
+    // empty -- so `--exclude-packets ""` clears the default excludes entirely.
+    // `--all-packets` is a shorthand that clears both packet filters; explicit
+    // --include/--exclude-packets below still take precedence over it.
     if (values["all-packets"]) {
         config.includePackets = [];
         config.excludePackets = [];
     }
-    const includePackets = splitList(values["include-packets"]);
-    if (includePackets.length > 0) {
-        config.includePackets = includePackets.map(resolvePacketId);
+    if (values["include-packets"] !== undefined) {
+        config.includePackets = splitList(values["include-packets"]).map(resolvePacketId);
     }
-    const excludePackets = splitList(values["exclude-packets"]);
-    if (excludePackets.length > 0) {
-        config.excludePackets = excludePackets.map(resolvePacketId);
+    if (values["exclude-packets"] !== undefined) {
+        config.excludePackets = splitList(values["exclude-packets"]).map(resolvePacketId);
     }
-    const includePlayerIds = splitList(values["include-player-ids"]);
-    if (includePlayerIds.length > 0) {
-        config.includePlayerIds = includePlayerIds.map(toPlayerId);
+    if (values["include-player-ids"] !== undefined) {
+        config.includePlayerIds = splitList(values["include-player-ids"]).map(toPlayerId);
     }
-    const excludeLuaHandlers = splitList(values["exclude-lua-handlers"]);
-    if (excludeLuaHandlers.length > 0) {
-        config.excludeLuaHandlers = excludeLuaHandlers;
+    if (values["exclude-lua-handlers"] !== undefined) {
+        config.excludeLuaHandlers = splitList(values["exclude-lua-handlers"]);
     }
 
     return config;
