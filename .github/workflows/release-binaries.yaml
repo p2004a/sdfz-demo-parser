@@ -16,6 +16,17 @@ jobs:
           cache: npm
       - run: npm ci
       - run: scripts/build-sea.sh --all
+      - name: Smoke-test the native binary
+        run: |
+          bin=dist-bin/sdfz-demo-parser-linux-x64
+          expected="$(node -p 'require("./package.json").version')"
+          got="$("$bin" --version)"
+          if [[ "$got" != "$expected" ]]; then
+            echo "error: binary reported version '$got', expected '$expected'" >&2
+            exit 1
+          fi
+          "$bin" "test/test_replays/2025-08-08_10-25-43-160_Supreme Isthmus v2_2025.04.08.sdfz" --header-only > /dev/null
+          echo "Smoke test passed (version $got, parsed a demo)"
       - uses: softprops/action-gh-release@v2
         with:
           files: dist-bin/*

@@ -17,10 +17,18 @@ cd "$(dirname "$0")/.."
 NODE_VERSION="$(node -p 'process.versions.node')"
 PKG_VERSION="$(node -p 'require("./package.json").version')"
 
+# `node --build-sea` only exists on Node 26+; fail loudly rather than with a
+# cryptic "bad option" from an older Node on PATH.
+if (( ${NODE_VERSION%%.*} < 26 )); then
+  echo "error: build-sea.sh must run on Node 26+, but found $NODE_VERSION" >&2
+  exit 1
+fi
+
 mkdir -p build dist-bin nodes
 
 # Bundle the CLI + its deps into one CommonJS file (SEA needs a single file).
-npx esbuild src/cli.ts --bundle --platform=node --format=cjs --target=node26 \
+# --no-install so a missing devDependency errors instead of fetching from the network.
+npx --no-install esbuild src/cli.ts --bundle --platform=node --format=cjs --target=node26 \
   --outfile=build/cli.cjs "--define:__SEA_VERSION__=\"$PKG_VERSION\""
 
 build_one() {
