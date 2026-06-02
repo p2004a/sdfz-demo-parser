@@ -113,23 +113,6 @@ function getVersion(): string {
     return pkg.version;
 }
 
-// The library logs verbose diagnostics via console.log (stdout), which would corrupt
-// the JSON we write to stdout. Route those to stderr while parsing so stdout stays clean.
-async function parseDemoFile(parser: DemoParser, file: string, verbose: boolean): Promise<DemoModel.Demo> {
-    if (!verbose) {
-        return parser.parseDemo(file);
-    }
-    const originalLog = console.log;
-    console.log = (...args) => {
-        console.error(...args);
-    };
-    try {
-        return await parser.parseDemo(file);
-    } finally {
-        console.log = originalLog;
-    }
-}
-
 type CliValues = ReturnType<typeof parseArgsOrExit>["values"];
 
 function buildConfig(values: CliValues): DemoParserConfig {
@@ -196,7 +179,7 @@ async function main(): Promise<void> {
         });
     }
 
-    const demo = await parseDemoFile(parser, file, Boolean(values.verbose));
+    const demo = await parser.parseDemo(file);
     const result = config.skipPackets ? demo : { ...demo, packets };
 
     const json = JSON.stringify(result, jsonReplacer, values.compact ? 0 : 2);
