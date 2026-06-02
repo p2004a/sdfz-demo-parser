@@ -130,24 +130,9 @@ async function parseDemoFile(parser: DemoParser, file: string, verbose: boolean)
     }
 }
 
-async function main(): Promise<void> {
-    const { values, positionals } = parseArgsOrExit();
+type CliValues = ReturnType<typeof parseArgsOrExit>["values"];
 
-    if (values.help) {
-        process.stdout.write(USAGE);
-        return;
-    }
-    if (values.version) {
-        process.stdout.write(`${getVersion()}\n`);
-        return;
-    }
-    if (positionals.length !== 1) {
-        const problem = positionals.length === 0 ? "missing demo file path" : "expected exactly one demo file path";
-        process.stderr.write(`Error: ${problem}.\n\n${USAGE}`);
-        process.exit(1);
-    }
-    const file = positionals[0];
-
+function buildConfig(values: CliValues): DemoParserConfig {
     const config: DemoParserConfig = {};
     if (values["header-only"]) {
         config.skipPackets = true;
@@ -155,6 +140,11 @@ async function main(): Promise<void> {
     if (values.verbose) {
         config.verbose = true;
     }
+    if (values["no-standard-lua-handlers"]) {
+        config.includeStandardLuaHandlers = false;
+    }
+
+    // --all-packets clears the default excludes; explicit --include/--exclude-packets below still override it.
     if (values["all-packets"]) {
         config.includePackets = [];
         config.excludePackets = [];
@@ -175,9 +165,28 @@ async function main(): Promise<void> {
     if (excludeLuaHandlers.length > 0) {
         config.excludeLuaHandlers = excludeLuaHandlers;
     }
-    if (values["no-standard-lua-handlers"]) {
-        config.includeStandardLuaHandlers = false;
+
+    return config;
+}
+
+async function main(): Promise<void> {
+    const { values, positionals } = parseArgsOrExit();
+
+    if (values.help) {
+        process.stdout.write(USAGE);
+        return;
     }
+    if (values.version) {
+        process.stdout.write(`${getVersion()}\n`);
+        return;
+    }
+    if (positionals.length !== 1) {
+        const problem = positionals.length === 0 ? "missing demo file path" : "expected exactly one demo file path";
+        process.stderr.write(`Error: ${problem}.\n\n${USAGE}`);
+        process.exit(1);
+    }
+    const file = positionals[0];
+    const config = buildConfig(values);
 
     const parser = new DemoParser(config);
     const packets: DemoModel.Packet.AbstractPacket[] = [];
