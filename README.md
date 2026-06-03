@@ -41,24 +41,11 @@ sdfz-demo-parser <demo.sdfz> > demo.json
 
 ### Standalone executable (no Node.js required)
 
-Every release ships self-contained executables with Node.js bundled in. Download the archive for your platform from the [latest GitHub release](../../releases/latest) (`<version>` is the release version):
-
-| Platform      | Archive                                          |
-| ------------- | ------------------------------------------------ |
-| Linux x64     | `sdfz-demo-parser-<version>-linux-x64.tar.gz`    |
-| Linux arm64   | `sdfz-demo-parser-<version>-linux-arm64.tar.gz`  |
-| Windows x64   | `sdfz-demo-parser-<version>-win-x64.zip`         |
-| Windows arm64 | `sdfz-demo-parser-<version>-win-arm64.zip`       |
-
-Each archive contains a single `sdfz-demo-parser` (`sdfz-demo-parser.exe` on Windows) binary.
+Every release ships self-contained executables with Node.js bundled in, for Linux and Windows (x64 and arm64). Download the archive for your platform from the [latest GitHub release](../../releases/latest) — `.tar.gz` for Linux, `.zip` for Windows — and extract the `sdfz-demo-parser` binary:
 
 ```
-# Linux: extract and run
 tar -xzf sdfz-demo-parser-*-linux-x64.tar.gz
 ./sdfz-demo-parser game.sdfz > demo.json
-
-# Windows: unzip, then run
-sdfz-demo-parser.exe game.sdfz > demo.json
 ```
 
 The binaries are unsigned, so Windows SmartScreen may warn on first run. They accept exactly the same options as the npm CLI.
