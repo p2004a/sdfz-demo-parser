@@ -18,8 +18,9 @@ jobs:
       - run: scripts/build-sea.sh --all
       - name: Smoke-test the native binary
         run: |
-          bin=dist-bin/sdfz-demo-parser-linux-x64
           expected="$(node -p 'require("./package.json").version')"
+          tar -xzf "dist-bin/sdfz-demo-parser-$expected-linux-x64.tar.gz" -C /tmp
+          bin=/tmp/sdfz-demo-parser
           got="$("$bin" --version)"
           if [[ "$got" != "$expected" ]]; then
             echo "error: binary reported version '$got', expected '$expected'" >&2

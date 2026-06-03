@@ -6,7 +6,8 @@
 #   scripts/build-sea.sh --all            Same as above
 #   scripts/build-sea.sh win-x64 linux-arm64   Build the named target(s)
 #
-# Outputs go to dist-bin/sdfz-demo-parser-<target>[.exe].
+# Outputs go to dist-bin/sdfz-demo-parser-<version>-<target>.{tar.gz,zip}, each
+# containing a single binary named sdfz-demo-parser[.exe] (no arch in the name).
 #
 # Run with the Node you want to ship (26+): `node --build-sea` requires Node >= 25.5
 # and the embedded runtime is whatever Node runs this, which must match the
@@ -32,7 +33,7 @@ npx --no-install esbuild src/cli.ts --bundle --platform=node --format=cjs --targ
   --outfile=build/cli.cjs "--define:__SEA_VERSION__=\"$PKG_VERSION\""
 
 build_one() {
-  local target="$1" archive bin ext name nodebin out
+  local target="$1" archive bin ext name nodebin binname out
   case "$target" in
     win-*) archive=zip;    bin=node.exe; ext=.exe ;;
     *)     archive=tar.gz; bin=bin/node; ext= ;;
@@ -48,13 +49,23 @@ build_one() {
       tar -xzf "nodes/$name.$archive" -C nodes
     fi
   fi
-  out="dist-bin/sdfz-demo-parser-$target$ext"
+  # Build the binary under a plain, arch-free name; the archive name carries the arch.
+  binname="sdfz-demo-parser$ext"
   # useCodeCache/useSnapshot must stay false for cross-platform blobs.
   cat > build/sea-config.json <<EOF
-{ "main": "build/cli.cjs", "output": "$out", "executable": "$nodebin",
+{ "main": "build/cli.cjs", "output": "build/$binname", "executable": "$nodebin",
   "disableExperimentalSEAWarning": true, "useCodeCache": false, "useSnapshot": false }
 EOF
   node --build-sea build/sea-config.json
+  [[ "$ext" == ".exe" ]] || chmod +x "build/$binname"
+
+  out="dist-bin/sdfz-demo-parser-$PKG_VERSION-$target.$archive"
+  rm -f "$out"
+  if [[ "$archive" == zip ]]; then
+    (cd build && zip -q "../$out" "$binname")
+  else
+    tar -czf "$out" -C build "$binname"
+  fi
   echo "Built $out"
 }
 
